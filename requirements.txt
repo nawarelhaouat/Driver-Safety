@@ -1,0 +1,25 @@
+# =============================================================================
+# requirements.txt
+# -----------------------------------------------------------------------------
+# Liste des dépendances Python du projet.
+# Installation : pip install -r requirements.txt
+# =============================================================================
+
+# Vision par ordinateur — lecture webcam, affichage, dessin
+opencv-python>=4.8.0
+
+# Détection de visage et landmarks faciaux (468 points)
+mediapipe>=0.10.0
+
+# Calcul numérique (distances, tableaux)
+numpy>=1.24.0
+
+# Lecture de fichiers audio pour l'alarme
+pygame>=2.5.0
+
+# Machine Learning — entraînement du modèle CNN (optionnel)
+# tensorflow>=2.13.0
+scikit-learn>=1.3.0
+
+# Visualisation pour les graphiques d'entraînement (optionnel)
+# matplotlib>=3.7.0
