@@ -1,177 +1,277 @@
-# 🚗 Drowsy Driver Safety Alert System
+# Driver Safety Monitoring System
 
-> Système de détection de somnolence en temps réel via webcam — Projet Image Processing
+Real-time driver monitoring system for detecting **drowsiness**, **yawning**, and **driver distraction** using computer vision.
 
----
+This project was developed as part of the **Image Processing** module at **ENSA Tanger** during the academic year **2025–2026**.
 
-## 📋 Présentation
+## Academic Context
 
-Ce projet implémente un **système de détection de somnolence pour conducteurs** basé sur la vision par ordinateur. Grâce à la webcam, il analyse le visage du conducteur en temps réel, mesure l'ouverture de ses yeux, et déclenche une alarme sonore et visuelle dès qu'une somnolence est détectée.
+* **Project title:** Driver Safety Monitoring System
+* **Topic:** Real-time detection of driver drowsiness and distraction using computer vision
+* **Developed by:** Nawar El Haouat & Nada El Oukili
+* **Supervised by:** Prof. Abdelmonaime LACHKAR
+* **Institution:** ENSA Tanger
+* **Academic year:** 2025–2026
 
----
+## Project Overview
 
-## 🎯 Objectif
+Road safety is a major challenge, and many accidents are caused by human factors such as fatigue, drowsiness, and distraction. This project proposes a low-cost computer vision solution that monitors the driver through a webcam and triggers alerts when dangerous behaviors are detected.
 
-Détecter automatiquement les signes de somnolence d'un conducteur en :
-1. Capturant le flux vidéo de la webcam
-2. Détectant les points clés du visage (landmarks)
-3. Calculant l'**Eye Aspect Ratio (EAR)** pour chaque frame
-4. Déclenchant une alerte si l'EAR reste trop bas pendant plusieurs frames consécutives
+The system is composed of two complementary modules:
 
----
+1. **Drowsiness Detection**
 
-## 🛠 Technologies utilisées
+   * Detects eye closure in real time.
+   * Uses the Eye Aspect Ratio (EAR).
+   * Combines geometric analysis with a CNN model trained using PyTorch.
+   * Triggers an alarm when the eyes remain closed for several consecutive frames.
 
-| Bibliothèque | Rôle |
-|---|---|
-| **OpenCV** | Lecture webcam, affichage, dessin |
-| **MediaPipe** | Détection des 468 landmarks du visage |
-| **NumPy** | Calculs de distances et tableaux |
-| **Pygame** | Lecture du son d'alarme |
+2. **Distraction and Yawning Detection**
 
----
+   * Detects yawning using the Mouth Aspect Ratio (MAR).
+   * Detects head distraction using Head Pose Estimation.
+   * Uses OpenCV `solvePnP` to estimate head orientation.
+   * Triggers alerts when the driver looks away from the road for too long.
 
-## 📁 Structure du projet
+## Main Features
 
-```
+* Real-time webcam processing
+* Face landmark detection using MediaPipe Face Mesh
+* Eye closure detection using EAR
+* CNN-based eye state classification
+* Yawning detection using MAR
+* Head pose estimation using yaw, pitch, and roll angles
+* Visual status display on the video frame
+* Sound alert system
+* CPU-compatible implementation
+* Modular Python project structure
+
+## Technologies Used
+
+| Technology   | Role                                                  |
+| ------------ | ----------------------------------------------------- |
+| Python       | Main programming language                             |
+| OpenCV       | Webcam capture, image processing, display, `solvePnP` |
+| MediaPipe    | Face landmark detection                               |
+| PyTorch      | CNN training and inference                            |
+| NumPy        | Numerical calculations                                |
+| pygame-ce    | Alarm sound management                                |
+| scikit-learn | Dataset splitting and evaluation metrics              |
+
+## Project Structure
+
+```text
 DrowsyDriverSafetyAlertSystem/
-│
-├── main.py                    # Point d'entrée principal
-├── generate_alarm.py          # Script utilitaire : génère alarm.wav
-├── requirements.txt           # Dépendances Python
-├── README.md                  # Ce fichier
-│
+├── main.py                      # Main entry point and real-time loop
+├── collect_data.py              # Collects training images
+├── train_model.py               # Trains the CNN model
+├── evaluate_model.py            # Evaluates the trained model
+├── generate_alarm.py            # Generates the alarm audio file
 ├── assets/
-│   └── alarm.wav              # Fichier audio d'alarme
-│
-├── src/
-│   ├── __init__.py
-│   ├── face_detector.py       # Détection du visage (MediaPipe)
-│   ├── eye_detector.py        # Extraction des yeux + calcul EAR
-│   ├── drowsiness_detector.py # Logique de décision somnolence
-│   ├── alarm_manager.py       # Gestion de l'alarme sonore
-│   └── utils.py               # Fonctions utilitaires (affichage, dessin)
-│
-└── config/
-    ├── __init__.py
-    └── settings.py            # Constantes configurables
+│   └── alarm.wav                # Alarm sound
+├── data/
+│   ├── awake/                   # Images of open eyes
+│   └── drowsy/                  # Images of closed eyes
+├── models/
+│   └── eye_cnn.pth              # Trained CNN model
+├── config/
+│   └── settings.py              # Project constants and thresholds
+└── src/
+    ├── face_detector.py         # Face and landmarks detection
+    ├── eye_detector.py          # Eye extraction and EAR calculation
+    ├── drowsiness_detector.py   # Drowsiness decision logic
+    ├── alarm_manager.py         # Alarm sound control
+    └── utils.py                 # Display and helper functions
 ```
 
----
+## How the System Works
 
-## ⚙️ Installation
+### 1. Drowsiness Detection
 
-### Prérequis
+For each webcam frame:
 
-- Python **3.8 ou supérieur**
-- Une webcam fonctionnelle
+1. The frame is captured using OpenCV.
+2. MediaPipe Face Mesh detects facial landmarks.
+3. Six landmarks are selected for each eye.
+4. The Eye Aspect Ratio is calculated.
+5. The eye region is extracted and passed to a CNN model.
+6. If both eyes are detected as closed for several consecutive frames, the system triggers a drowsiness alert.
 
-### Étapes
+The EAR is calculated as:
+
+```text
+EAR = ( ||P2 - P6|| + ||P3 - P5|| ) / ( 2 × ||P1 - P4|| )
+```
+
+### 2. Yawning Detection
+
+The system calculates the Mouth Aspect Ratio (MAR) using selected mouth landmarks.
+
+```text
+MAR = ( ||M2 - M6|| + ||M3 - M5|| ) / ( 2 × ||M1 - M4|| )
+```
+
+A high MAR value over several frames indicates that the mouth is widely open, which may correspond to yawning.
+
+### 3. Distraction Detection
+
+The distraction module estimates the head orientation using OpenCV `solvePnP`.
+
+The system analyzes:
+
+* **Yaw:** left/right head rotation
+* **Pitch:** up/down head movement
+* **Roll:** lateral head tilt
+
+If the yaw or pitch angle exceeds the configured threshold for several consecutive frames, the system displays a **DISTRACTED** alert.
+
+## Installation
+
+### 1. Clone the repository
 
 ```bash
-# 1. Cloner ou télécharger le projet
-cd DrowsyDriverSafetyAlertSystem
-
-# 2. (Optionnel) Créer un environnement virtuel
-python -m venv venv
-source venv/bin/activate        # Linux / macOS
-venv\Scripts\activate           # Windows
-
-# 3. Installer les dépendances
-pip install -r requirements.txt
-
-# 4. Générer le fichier alarm.wav (si absent)
-python generate_alarm.py
+git clone https://github.com/nawarelhaouat/Driver-Safety.git
+cd Driver-Safety
 ```
 
----
+### 2. Create a virtual environment
 
-## ▶️ Lancement
+```bash
+python -m venv .venv
+```
+
+### 3. Activate the virtual environment
+
+On Windows:
+
+```bash
+.venv\Scripts\activate
+```
+
+On Linux or macOS:
+
+```bash
+source .venv/bin/activate
+```
+
+### 4. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+If a `requirements.txt` file is not available:
+
+```bash
+pip install opencv-python mediapipe torch torchvision numpy pygame-ce scikit-learn
+```
+
+## Usage
+
+Run the real-time monitoring system:
 
 ```bash
 python main.py
 ```
 
-### Contrôles clavier
+## Keyboard Controls
 
-| Touche | Action |
-|--------|--------|
-| `q` | Quitter le programme |
-| `r` | Réinitialiser le détecteur |
+| Key | Action                       |
+| --- | ---------------------------- |
+| `Q` | Quit the application         |
+| `R` | Reset the drowsiness counter |
 
----
+## Training the CNN Model
 
-## 🧮 Méthode EAR — Eye Aspect Ratio
-
-L'**EAR** est une mesure géométrique de l'ouverture de l'œil, définie par la formule :
-
-```
-         ||P2 - P6|| + ||P3 - P5||
-EAR  =  ─────────────────────────────
-                2 × ||P1 - P4||
-```
-
-Où `P1` à `P6` sont les 6 points caractéristiques du contour de l'œil :
-
-```
-        P2   P3
-   P1 ·       · P4
-        P6   P5
-```
-
-| Situation | EAR approximatif |
-|-----------|-----------------|
-| Œil grand ouvert | ≈ 0.30 – 0.40 |
-| Œil à moitié fermé | ≈ 0.20 – 0.25 |
-| Œil fermé | ≈ 0.10 ou moins |
-
-**Décision :** Si l'EAR moyen (des deux yeux) reste **inférieur à 0.22** pendant **20 frames consécutives** (≈ 0.67 secondes à 30 fps), le système déclare l'état **DROWSY** et déclenche l'alarme.
-
-Ces valeurs sont configurables dans `config/settings.py`.
-
----
-
-## 🔊 Fichier audio
-
-Si le fichier `assets/alarm.wav` est absent, générez-le automatiquement :
+### 1. Collect training data
 
 ```bash
-python generate_alarm.py
+python collect_data.py
 ```
 
-Vous pouvez aussi placer **votre propre fichier** `.wav` dans `assets/` et le renommer en `alarm.wav`.  
-Téléchargement gratuit : [freesound.org](https://freesound.org) (rechercher "alarm beep").
+Collect images for both classes:
 
----
+* `awake`: eyes open
+* `drowsy`: eyes closed
 
-## ⚠️ Limites du projet
+### 2. Train the model
 
-- **Conditions d'éclairage** : les performances baissent en faible luminosité
-- **Angle du visage** : une vue de face est nécessaire ; le profil n'est pas bien géré
-- **Lunettes** : peuvent perturber la détection des yeux selon le type de monture
-- **Faux positifs** : les clignements normaux rapides peuvent rarement déclencher une alerte
-- **Pas de détection de bâillement** : la bouche n'est pas analysée dans cette version
+```bash
+python train_model.py
+```
 
----
+The trained model will be saved in:
 
-## 🚀 Améliorations possibles
+```text
+models/eye_cnn.pth
+```
 
-1. **Détection du bâillement** — analyser l'ouverture de la bouche avec les landmarks de la bouche
-2. **Calibration automatique** — ajuster le seuil EAR selon le conducteur au démarrage
-3. **Enregistrement des événements** — journaliser les alertes avec horodatage
-4. **Interface graphique Tkinter** — ajouter un tableau de bord avec statistiques
-5. **Détection de la tête qui penche** — détecter la posture de la tête (head pose estimation)
-6. **Modèle deep learning** — remplacer l'EAR par un classifieur CNN pour plus de robustesse
-7. **Mode nuit** — traitement d'image adapté aux conditions de faible luminosité
+### 3. Evaluate the model
 
----
+```bash
+python evaluate_model.py
+```
 
-## 👨‍💻 Auteur
+## Configuration
 
-Projet réalisé dans le cadre du module **Image Processing**.
+Adjust thresholds and paths in:
 
----
+```text
+config/settings.py
+```
 
-## 📄 Licence
+Typical configurable parameters include:
 
-Usage académique et éducatif uniquement.
+* EAR threshold
+* MAR threshold
+* Number of consecutive frames before alert
+* Webcam index
+* Alarm file path
+* Head pose thresholds
+
+## Results
+
+The system was tested in real time using a standard laptop without a dedicated GPU. The drowsiness module successfully detected eye closure and triggered the alarm after the eyes remained closed for several consecutive frames.
+
+During training, the CNN achieved very high accuracy on the collected dataset. However, the dataset was limited because it was collected from a small number of conditions. Therefore, the model is suitable for demonstration but requires more diverse data before real deployment.
+
+## Limitations
+
+* The CNN was trained on a limited dataset.
+* Performance may decrease in low-light conditions.
+* Strong head rotation can affect landmark detection.
+* Sunglasses may reduce eye and mouth landmark accuracy.
+* Static thresholds may not work equally well for all users.
+* The system is currently a prototype and not a certified safety device.
+
+## Future Improvements
+
+* Add automatic calibration for EAR, MAR, yaw, and pitch thresholds.
+* Train the CNN on public datasets such as CEW or NTHU.
+* Use a larger and more diverse dataset with different users, lighting conditions, and face angles.
+* Merge both modules into a single optimized pipeline.
+* Deploy the system on an embedded device such as Raspberry Pi.
+* Test the system inside a real vehicle environment.
+
+## Repository
+
+```text
+https://github.com/nawarelhaouat/Driver-Safety
+```
+
+## Authors
+
+* Nawar El Haouat
+* Nada El Oukili
+
+## Supervisor
+
+* Prof. Abdelmonaim LACHKAR
+
+## Institution
+
+* École Nationale des Sciences Appliquées de Tanger — ENSA Tanger
+
+## License
+
+This project is intended for academic and educational use.
