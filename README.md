@@ -9,7 +9,7 @@ This project was developed as part of the **Image Processing** module at **ENSA 
 * **Project title:** Driver Safety Monitoring System
 * **Topic:** Real-time detection of driver drowsiness and distraction using computer vision
 * **Developed by:** Nawar El Haouat & Nada El Oukili
-* **Supervised by:** Prof. Abdelmonaime LACHKAR
+* **Supervised by:** Prof. Abdelmonaim LACHKAR
 * **Institution:** ENSA Tanger
 * **Academic year:** 2025–2026
 
